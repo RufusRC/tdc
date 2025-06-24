@@ -1,59 +1,42 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abrir links TDC - Passo 1</title>
-    <script>
-        function openInNewTab(url) {
-            window.open(url, '_blank').focus();
+  <meta charset="UTF-8">
+  <title>Redirecionando...</title>
+  <script>
+    async function redirecionar() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tdc = urlParams.get("tdc");
+
+      if (!tdc) {
+        document.body.innerText = "Erro: TDC não informado na URL.";
+        return;
+      }
+
+      try {
+        // Busca o token via Vercel (proxy HTTPS seguro)
+        const tokenResp = await fetch("https://tdc-token-proxy.vercel.app/api/token"); // ✅ Troque aqui se usar outro domínio
+        const data = await tokenResp.json();
+
+        const tokenFinal = data.token;
+
+        if (!tokenFinal) {
+          document.body.innerText = "Erro: Token não encontrado.";
+          return;
         }
 
-        async function processFile(event) {
-            const file = document.getElementById('fileInput').files[0];
-            const token = document.getElementById('token').value;
+        // Monta a URL final e redireciona
+        const finalUrl = `http://servicoimagenseorderceara.enel.com.br/img_CE_pro/ConsultaImagem/Form?NumeroDoTDC=${tdc}&token=${tokenFinal}`;
+        window.location.href = finalUrl;
+      } catch (e) {
+        document.body.innerText = "Erro ao obter o token: " + e.message;
+      }
+    }
 
-            if (!file || !token) {
-                alert('Por favor, selecione um arquivo e insira o token.');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const lines = e.target.result.split('\n');
-
-                for (const line of lines) {
-                    const tdc = line.trim();
-                    if (tdc) {
-                        const urlTOI = `http://servicoimagenseorderceara.enel.com.br/img_CE_pro/ConsultaImagem/Form?NumeroDoTDC=${tdc}&token=${token}`;
-                        openInNewTab(urlTOI);
-
-                        // Se você também quiser abrir o link CTM, faça isso aqui
-                        const urlCTM = `http://servicoimagenseorderceara.enel.com.br/img_CE_pro/ConsultaImagem/Form?NumeroDoTDC=${tdc}&token=${token}`;
-                        openInNewTab(urlCTM);
-                    }
-                }
-
-                alert('Links abertos com sucesso!');
-            };
-            reader.readAsText(file);
-        }
-
-        document.addEventListener('DOMContentLoaded', (event) => {
-            document.getElementById('downloadButton').addEventListener('click', processFile);
-        });
-    </script>
+    window.onload = redirecionar;
+  </script>
 </head>
 <body>
-    <h1>Abrir links TDC - Passo 1</h1>
-    <form>
-        <label for="fileInput">Upload do arquivo .txt com os números dos TDCs:</label>
-        <input type="file" id="fileInput" accept=".txt"><br><br>
-
-        <label for="token">Insira o token atualizado:</label>
-        <input type="text" id="token" placeholder="Token"><br><br>
-
-        <button type="button" id="downloadButton">Abrir Links</button>
-    </form>
+  Redirecionando, por favor aguarde...
 </body>
 </html>
